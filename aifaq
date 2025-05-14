@@ -28,9 +28,7 @@ try {
 } catch (err) {
   console.error("FULL ERROR: ", text);
   res.status(500).send("Make webhook error: " + text);
-}
-
-  } catch (error) {
+} catch (error) {
     console.error("FULL ERROR:", error);
     res.status(500).json({ error: "Something went wrong" });
   }
