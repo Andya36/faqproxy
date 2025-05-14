@@ -21,8 +21,15 @@ app.post("/proxy", async (req, res) => {
       }
     );
 
-    const data = await makeRes.json();
-    res.json(data);
+    const text = await makeRes.text();
+try {
+  const data = JSON.parse(text);
+  res.json(data);
+} catch (err) {
+  console.error("FULL ERROR: ", text);
+  res.status(500).send("Make webhook error: " + text);
+}
+
   } catch (error) {
     console.error("FULL ERROR:", error);
     res.status(500).json({ error: "Something went wrong" });
