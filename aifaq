@@ -1,0 +1,34 @@
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.post("/proxy", async (req, res) => {
+  try {
+    const fetch = (await import("node-fetch")).default;
+
+    const makeRes = await fetch(
+      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridhq1y1sk",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(req.body),
+      }
+    );
+
+    const data = await makeRes.json();
+    res.json(data);
+  } catch (error) {
+    console.error("FULL ERROR:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Proxy running on port 3000");
+});
