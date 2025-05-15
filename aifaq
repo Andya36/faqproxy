@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+
 const app = express();
 
 app.use(cors());
@@ -8,18 +9,21 @@ app.use(express.json());
 app.post("/proxy", async (req, res) => {
   try {
     const fetch = (await import("node-fetch")).default;
-    const makeRes = await fetch(
-      "https://hook.eu2.make.com/uhihkel15cay5u6kul592ridqh1y1sk",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(req.body),
-      }
-    );
-    const text = await makeRes.text();
-    res.status(200).json({ answer: text }); // This wraps response as JSON
+    const makeRes = await fetch("https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    const makeData = await makeRes.json();
+
+    if (makeRes.ok && makeData.answer) {
+      res.status(200).json({ answer: makeData.answer });
+    } else {
+      res.status(200).json({ answer: "Not found" });
+    }
   } catch (error) {
     console.error("FULL ERROR:", error);
     res.status(500).json({ error: "Something went wrong" });
