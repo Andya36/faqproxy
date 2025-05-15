@@ -8,24 +8,28 @@ app.use(express.json());
 app.post("/proxy", async (req, res) => {
   try {
     const fetch = (await import("node-fetch")).default;
-    const makeRes = await fetch("https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(req.body),
-    });
+    const makeRes = await fetch(
+      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body),
+      }
+    );
 
-    const rawText = await makeRes.text(); // Read response as raw text
-    let answer;
+    const rawText = await makeRes.text();
+
     try {
-      const parsed = JSON.parse(rawText);
-      answer = parsed.answer || "Not found";
-    } catch {
-      answer = rawText || "Not found";
+      const makeData = JSON.parse(rawText);
+      if (makeRes.ok && makeData.answer) {
+        res.status(200).json({ answer: makeData.answer });
+      } else {
+        res.status(200).json({ answer: "Not found" });
+      }
+    } catch (parseError) {
+      console.error("Could not parse JSON from Make. Raw text:", rawText);
+      res.status(200).json({ answer: rawText });
     }
-
-    res.status(200).json({ answer });
   } catch (error) {
     console.error("FULL ERROR:", error);
     res.status(500).json({ error: "Something went wrong" });
