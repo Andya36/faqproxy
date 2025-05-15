@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-
 const app = express();
 
 app.use(cors());
@@ -9,21 +8,18 @@ app.use(express.json());
 app.post("/proxy", async (req, res) => {
   try {
     const fetch = (await import("node-fetch")).default;
-
     const makeRes = await fetch(
-      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqh1y1sk",
+      "https://hook.eu2.make.com/uhihkel15cay5u6kul592ridqh1y1sk", // replace with your real webhook
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: JSON.stringify(req.body),
+        body: JSON.stringify(req.body)
       }
     );
-const text = await makeRes.text();
-res.status(200).send(text); // <-- this sends plain text directly
-
-    }
+    const text = await makeRes.text();    // ✅ declare once
+    res.status(200).send(text);           // ✅ send plain text
   } catch (error) {
     console.error("FULL ERROR:", error);
     res.status(500).json({ error: "Something went wrong" });
