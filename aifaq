@@ -20,8 +20,6 @@ app.post("/proxy", async (req, res) => {
         body: JSON.stringify(req.body),
       }
     );
-
-    const text = await makeRes.text();
 const text = await makeRes.text();
 res.status(200).send(text); // <-- this sends plain text directly
 
