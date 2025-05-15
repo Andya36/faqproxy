@@ -22,13 +22,9 @@ app.post("/proxy", async (req, res) => {
     );
 
     const text = await makeRes.text();
+const text = await makeRes.text();
+res.status(200).send(text); // <-- this sends plain text directly
 
-    try {
-      const data = JSON.parse(text);
-      res.json(data);
-    } catch (err) {
-      console.error("FULL ERROR: Could not parse Make response", text);
-      res.status(200).json({ answer: text }); // Send raw text back as fallback
     }
   } catch (error) {
     console.error("FULL ERROR:", error);
