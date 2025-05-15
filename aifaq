@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-
 const app = express();
 
 app.use(cors());
@@ -9,18 +8,26 @@ app.use(express.json());
 app.post("/proxy", async (req, res) => {
   try {
     const fetch = (await import("node-fetch")).default;
-    const makeRes = await fetch("https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(req.body),
-    });
+    const makeRes = await fetch(
+      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req.body),
+      }
+    );
 
-    const makeData = await makeRes.json();
+    const text = await makeRes.text(); // don't assume it's JSON
+    let data;
+    try {
+      data = JSON.parse(text); // try parsing it
+    } catch (err) {
+      console.warn("Could not parse JSON from Make. Raw text:", text);
+      return res.status(200).json({ answer: "Not found" }); // fallback
+    }
 
-    if (makeRes.ok && makeData.answer) {
-      res.status(200).json({ answer: makeData.answer });
+    if (data.answer) {
+      res.status(200).json({ answer: data.answer });
     } else {
       res.status(200).json({ answer: "Not found" });
     }
