@@ -9,7 +9,7 @@ app.post("/proxy", async (req, res) => {
   try {
     const fetch = (await import("node-fetch")).default;
     const makeRes = await fetch(
-      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk",
+      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqh1y1sk",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
