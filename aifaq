@@ -1,43 +1,26 @@
-const express = require("express");
-const cors = require("cors");
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
 app.post("/proxy", async (req, res) => {
   try {
-    const fetch = (await import("node-fetch")).default;
-    const makeRes = await fetch(
-      "https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqhy1ysk",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(req.body),
-      }
-    );
-
+    const makeRes = await fetch("https://hook.eu2.make.com/uhiihkel15cay5u6kul592ridqh1y1sk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(req.body),
+    });
     const rawText = await makeRes.text();
-
-    let makeData;
     try {
-      makeData = JSON.parse(rawText);
-
+      const makeData = JSON.parse(rawText);
       if (makeRes.ok && makeData.answer) {
-        return res.status(200).json({ answer: makeData.answer });
+        res.status(200).json({ answer: makeData.answer });
       } else {
-        return res.status(200).json({ answer: "Not found" });
+        res.status(200).json({ answer: "Not found" });
       }
     } catch (parseError) {
       console.error("Could not parse JSON from Make. Raw text:", rawText);
-      return res.status(200).json({ answer: rawText });
+      res.status(200).json({ answer: rawText });
     }
   } catch (error) {
-    console.error("FULL ERROR:", error);
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("Error forwarding to Make:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
-});
-
-app.listen(3000, () => {
-  console.log("Proxy running on port 3000");
 });
