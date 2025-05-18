@@ -3,6 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
 const app = express();
+
 app.use(express.json());
 
 const faqData = require('./faq.json');
@@ -17,6 +18,7 @@ function cosineSimilarity(a, b) {
 
 app.post('/faq', async (req, res) => {
   const userQuestion = req.body.question;
+
   if (!userQuestion) return res.status(400).json({ error: 'No question provided' });
 
   try {
@@ -28,7 +30,8 @@ app.post('/faq', async (req, res) => {
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
         }
       }
     );
@@ -57,5 +60,6 @@ app.post('/faq', async (req, res) => {
   }
 });
 
-const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+// *** Final fix: Use dynamic port for Render ***
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
