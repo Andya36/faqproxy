@@ -1,0 +1,12 @@
+[
+  {
+    "question": "What does this AI assistant actually do?",
+    "answer": "It gives instant answers to customer questions using your store FAQs.",
+    "embedding": [0.1, 0.2, 0.3, 0.4]
+  },
+  {
+    "question": "How much does it cost?",
+    "answer": "It’s £30 per month with no setup fees.",
+    "embedding": [0.3, 0.1, 0.4, 0.2]
+  }
+]
