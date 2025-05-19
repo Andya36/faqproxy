@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const faqData = require('./faq.json').faqs;
+const faqData = require('./faq.json');
 
 app.use(express.json());
 app.use((err, req, res, next) => {
