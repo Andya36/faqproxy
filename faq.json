@@ -2,51 +2,101 @@
   {
     "question": "What does this AI assistant actually do?",
     "answer": "It gives instant answers to customer questions using your store FAQs.",
-    "embedding": [0.1, 0.2, 0.3, 0.4]
+    "embedding": [
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ]
   },
   {
     "question": "How is this different from a normal chatbot?",
     "answer": "It answers using your actual FAQ content and logs anything new for review.",
-    "embedding": [0.3, 0.1, 0.4, 0.2]
+    "embedding": [
+      0.3,
+      0.1,
+      0.4,
+      0.2
+    ]
   },
   {
     "question": "Is this hard to set up?",
     "answer": "No. It's plug-and-play — just copy and paste the script and connect Airtable.",
-    "embedding": [0.2, 0.4, 0.1, 0.3]
+    "embedding": [
+      0.2,
+      0.4,
+      0.1,
+      0.3
+    ]
   },
   {
     "question": "Will it work on my site?",
     "answer": "Yes. It works with any site that lets you paste custom code (like Carrd, Wix, Webflow).",
-    "embedding": [0.4, 0.2, 0.3, 0.1]
+    "embedding": [
+      0.4,
+      0.2,
+      0.3,
+      0.1
+    ]
   },
   {
     "question": "What if the answer isn't in my FAQs?",
     "answer": "It politely tells the customer we'll follow up — and logs the question for you to reply or add to the system.",
-    "embedding": [0.1, 0.3, 0.2, 0.4]
+    "embedding": [
+      0.1,
+      0.3,
+      0.2,
+      0.4
+    ]
   },
   {
     "question": "Can it answer product-specific questions?",
     "answer": "Yes. As long as the question exists in your Airtable FAQ, the answer is instant.",
-    "embedding": [0.3, 0.2, 0.1, 0.4]
+    "embedding": [
+      0.3,
+      0.2,
+      0.1,
+      0.4
+    ]
   },
   {
     "question": "Does it really work 24/7?",
     "answer": "Yes. Customers get instant answers day or night — even while you sleep.",
-    "embedding": [0.2, 0.1, 0.4, 0.3]
+    "embedding": [
+      0.2,
+      0.1,
+      0.4,
+      0.3
+    ]
   },
   {
     "question": "Can it collect email addresses too?",
     "answer": "Yes. You can ask for email replies and build a follow-up list automatically.",
-    "embedding": [0.4, 0.3, 0.1, 0.2]
+    "embedding": [
+      0.4,
+      0.3,
+      0.1,
+      0.2
+    ]
   },
   {
     "question": "Is it trained on my actual product info?",
     "answer": "Yes. It only responds with your approved FAQ data so it never makes things up.",
-    "embedding": [0.1, 0.4, 0.2, 0.3]
+    "embedding": [
+      0.1,
+      0.4,
+      0.2,
+      0.3
+    ]
   },
   {
-    "question": "Can it handle questions we haven't answered before?", 
+    "question": "Can it handle questions we haven't answered before?",
     "answer": "Yes. If the answer isn't already in your FAQs, it politely lets the customer know you'll follow up.",
-    "embedding": [0.3, 0.2, 0.4, 0.1]
+    "embedding": [
+      0.3,
+      0.2,
+      0.4,
+      0.1
+    ]
   }
 ]
