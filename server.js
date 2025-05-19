@@ -2,43 +2,33 @@ require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const app = express();
-const faqData = require('./faq.json');
-
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 app.use(express.json());
 
-// Error handling middleware for invalid JSON
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    return res.status(400).json({ error: 'Invalid JSON format' });
-  }
-  next();
-});
+const faqData = require('./faq.json');
 
-// CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
+// Cosine similarity function
+function cosineSimilarity(a, b) {
+  const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
+  const magB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
+  return dot / (magA * magB);
+}
 
-
-async function logMissedQuestionToAirtable(question, email = null) {
-  const tableName = 'Missed Questions';
-  const fields = { "Question": question };
-  if (email) fields["Email"] = email;
-
+// Logs missed question to Airtable
+async function logMissedQuestionToAirtable(question, email = '') {
   try {
     await axios.post(
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}`,
-      { fields },
+      'https://api.airtable.com/v0/appOthrYmTTWZK1Yc/Imported%20table',
+      {
+        fields: {
+          Question: question,
+          Email: email
+        }
+      },
       {
         headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+          Authorization: `Bearer patllCpDX9am3MT66.5246ec5c2fcd01dfbdbc07bb4f165081a2354360e3bc9b0655a6a97cacc3289e`,
           'Content-Type': 'application/json'
         }
       }
@@ -48,56 +38,54 @@ async function logMissedQuestionToAirtable(question, email = null) {
   }
 }
 
-app.get('/', (req, res) => res.json({ status: 'ok' }));
-
-const cosineSimilarity = (a, b) => {
-  const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
-  const magA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
-  const magB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
-  return dot / (magA * magB);
-};
-
 app.post('/faq', async (req, res) => {
-  try {
-    const { question } = req.body;
-    if (!question) return res.status(400).json({ error: 'No question provided' });
+  const userQuestion = req.body.question;
+  const userEmail = req.body.email || '';
 
-    const embeddingResponse = await axios.post('https://api.openai.com/v1/embeddings',
-      { input: question, model: 'text-embedding-3-small' },
-      { headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
+  if (!userQuestion) {
+    return res.status(400).json({ error: 'No question provided' });
+  }
+
+  try {
+    const embeddingResponse = await axios.post(
+      'https://api.openai.com/v1/embeddings',
+      {
+        input: userQuestion,
+        model: 'text-embedding-3-small'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           'Content-Type': 'application/json'
-      }}
+        }
+      }
     );
 
-    const results = embeddingResponse?.data?.data;
-    if (!results || !Array.isArray(results) || results.length === 0) {
-      console.warn('No embedding returned from OpenAI.');
-      return res.status(500).json({ error: 'Failed to get embedding from OpenAI' });
-    }
-    const userEmbedding = results[0].embedding;
+    const userEmbedding = embeddingResponse.data.data[0].embedding;
 
-    const match = faqData.reduce((best, item) => {
+    let bestMatch = null;
+    let bestScore = -1;
+
+    faqData.forEach(item => {
       const score = cosineSimilarity(userEmbedding, item.embedding);
-      return score > best.score ? { item, score } : best;
-    }, { score: -1 });
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = item;
+      }
+    });
 
-    if (match.score >= 0.80) {
-      res.json({ answer: match.item.answer });
+    if (bestScore >= 0.80) {
+      res.json({ answer: bestMatch.answer });
     } else {
-      await logMissedQuestionToAirtable(question);
-      res.json({ answer: "We'll follow up shortly." });
+      await logMissedQuestionToAirtable(userQuestion, userEmail);
+      res.json({ answer: "We’ll follow up shortly." });
     }
   } catch (err) {
-    const errorDetails = {
-      message: err.message,
-      status: err.response?.status,
-      openaiError: err.response?.data,
-      timestamp: new Date().toISOString()
-    };
-    console.error('OpenAI API Error:', JSON.stringify(errorDetails, null, 2));
-    res.status(500).json({ error: 'Failed to process request', details: errorDetails });
+    console.error('OpenAI API Error:', err.message);
+    res.status(500).json({ error: 'Failed to process request' });
   }
 });
 
-app.listen(3000, '0.0.0.0', () => console.log('Server running on port 3000'));
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
