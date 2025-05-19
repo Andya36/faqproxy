@@ -44,8 +44,14 @@ app.post('/faq', async (req, res) => {
       answer: match.score >= 0.80 ? match.item.answer : "We'll follow up shortly."
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ error: 'Failed to process request' });
+    const errorDetails = {
+      message: err.message,
+      status: err.response?.status,
+      openaiError: err.response?.data,
+      timestamp: new Date().toISOString()
+    };
+    console.error('OpenAI API Error:', JSON.stringify(errorDetails, null, 2));
+    res.status(500).json({ error: 'Failed to process request', details: errorDetails });
   }
 });
 
