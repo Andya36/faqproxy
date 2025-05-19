@@ -4,38 +4,21 @@ const axios = require('axios');
 const app = express();
 const faqData = require('./faq.json');
 
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 app.use(express.json());
+
+// Error handling middleware for invalid JSON
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
     return res.status(400).json({ error: 'Invalid JSON format' });
   }
   next();
-
-async function logMissedQuestionToAirtable(question, email = null) {
-  const airtableToken = 'pat1lCpDX9am3MT66.5246ec5c2fcd01dfbdbc07bb4f165081a2354360e3bc9b0655a6a97cacc3289e';
-  const baseId = 'appOthrYmTTWZK1Yc';
-  const tableName = 'Missed Questions';
-  const fields = { "Question": question };
-  if (email) fields["Email"] = email;
-  
-  try {
-    await axios.post(
-      `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`,
-      { fields },
-      { 
-        headers: { 
-          Authorization: `Bearer ${airtableToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-  } catch (err) {
-    console.error('Airtable logging failed:', err.message);
-  }
-}
-
-
 });
+
+// CORS middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST');
@@ -43,30 +26,25 @@ app.use((req, res, next) => {
   next();
 });
 
-const axios = require('axios');
-async function logMissedQuestionToAirtable(question, email = '') {
+
+async function logMissedQuestionToAirtable(question, email = null) {
+  const tableName = 'Missed Questions';
+  const fields = { "Question": question };
+  if (email) fields["Email"] = email;
+
   try {
     await axios.post(
-      'https://api.airtable.com/v0/appOthrYmTTWZK1Yc/Missed%20Questions',
-      {
-        records: [
-          {
-            fields: {
-              Question: question,
-              Email: email
-            }
-          }
-        ]
-      },
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}`,
+      { fields },
       {
         headers: {
-          Authorization: `Bearer patlICpDX9am3MT66.5246ec5c2fcd01dfbdcb07bb4f165081a2354360e3bc9b0655a6a97cacc3289e`,
+          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           'Content-Type': 'application/json'
         }
       }
     );
-  } catch (error) {
-    console.error('Failed to log missed question to Airtable:', error.message);
+  } catch (err) {
+    console.error('Airtable logging failed:', err.message);
   }
 }
 
@@ -86,17 +64,19 @@ app.post('/faq', async (req, res) => {
 
     const embeddingResponse = await axios.post('https://api.openai.com/v1/embeddings',
       { input: question, model: 'text-embedding-3-small' },
-      { headers: { 
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      { headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
           'Content-Type': 'application/json'
       }}
     );
 
     const results = embeddingResponse?.data?.data;
     if (!results || !Array.isArray(results) || results.length === 0) {
-      throw new Error('No embedding returned from OpenAI.');
+      console.warn('No embedding returned from OpenAI.');
+      return res.status(500).json({ error: 'Failed to get embedding from OpenAI' });
     }
     const userEmbedding = results[0].embedding;
+
     const match = faqData.reduce((best, item) => {
       const score = cosineSimilarity(userEmbedding, item.embedding);
       return score > best.score ? { item, score } : best;
