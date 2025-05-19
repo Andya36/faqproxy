@@ -43,6 +43,33 @@ app.use((req, res, next) => {
   next();
 });
 
+const axios = require('axios');
+async function logMissedQuestionToAirtable(question, email = '') {
+  try {
+    await axios.post(
+      'https://api.airtable.com/v0/appOthrYmTTWZK1Yc/Missed%20Questions',
+      {
+        records: [
+          {
+            fields: {
+              Question: question,
+              Email: email
+            }
+          }
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer patlICpDX9am3MT66.5246ec5c2fcd01dfbdcb07bb4f165081a2354360e3bc9b0655a6a97cacc3289e`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Failed to log missed question to Airtable:', error.message);
+  }
+}
+
 app.get('/', (req, res) => res.json({ status: 'ok' }));
 
 const cosineSimilarity = (a, b) => {
