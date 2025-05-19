@@ -26,7 +26,7 @@ app.post('/faq', async (req, res) => {
     const { question } = req.body;
     if (!question) return res.status(400).json({ error: 'No question provided' });
 
-    const { data } = await axios.post('https://api.openai.com/v1/embeddings', 
+    const embeddingResponse = await axios.post('https://api.openai.com/v1/embeddings',
       { input: question, model: 'text-embedding-3-small' },
       { headers: { 
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -34,7 +34,11 @@ app.post('/faq', async (req, res) => {
       }}
     );
 
-    const userEmbedding = data.data[0].embedding;
+    const results = embeddingResponse?.data?.data;
+    if (!results || !Array.isArray(results) || results.length === 0) {
+      throw new Error('No embedding returned from OpenAI.');
+    }
+    const userEmbedding = results[0].embedding;
     const match = faqData.reduce((best, item) => {
       const score = cosineSimilarity(userEmbedding, item.embedding);
       return score > best.score ? { item, score } : best;
