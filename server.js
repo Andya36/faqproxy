@@ -10,6 +10,31 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: 'Invalid JSON format' });
   }
   next();
+
+async function logMissedQuestionToAirtable(question, email = null) {
+  const airtableToken = 'pat1lCpDX9am3MT66.5246ec5c2fcd01dfbdbc07bb4f165081a2354360e3bc9b0655a6a97cacc3289e';
+  const baseId = 'appOthrYmTTWZK1Yc';
+  const tableName = 'Missed Questions';
+  const fields = { "Question": question };
+  if (email) fields["Email"] = email;
+  
+  try {
+    await axios.post(
+      `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}`,
+      { fields },
+      { 
+        headers: { 
+          Authorization: `Bearer ${airtableToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  } catch (err) {
+    console.error('Airtable logging failed:', err.message);
+  }
+}
+
+
 });
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -50,9 +75,12 @@ app.post('/faq', async (req, res) => {
       return score > best.score ? { item, score } : best;
     }, { score: -1 });
 
-    res.json({ 
-      answer: match.score >= 0.80 ? match.item.answer : "We'll follow up shortly."
-    });
+    if (match.score >= 0.80) {
+      res.json({ answer: match.item.answer });
+    } else {
+      await logMissedQuestionToAirtable(question);
+      res.json({ answer: "We'll follow up shortly." });
+    }
   } catch (err) {
     const errorDetails = {
       message: err.message,
